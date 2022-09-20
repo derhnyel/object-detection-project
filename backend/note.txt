@@ -1,0 +1,21 @@
+pip install fastapi
+python -m pip install uvicorn
+pip install python-multipart
+pydantic
+
+
+#TODO: -> api Build Logging
+#TODO: -> api Write Tests
+#TODO: -> project Setup GitWorkflow for CICD
+#TODO: -> api Setup Docker file 
+#FIX:  -> api Get content Lenght for request images
+#FIX:  -> api Get Predicted Image file size
+#FIX:  -> api Save the Original Image
+#FIX:  -> api Dynamically or Schedule Updating Pytorch Cache Model => #FIX: Decouple Model Init from Flask application (Store Model in a cloud Bucket and a schedule script could update model periodically) Flask Application downloads Model from cloud bucket
+#DONE: -> api Add/Track filename and other file attributes to prediction json Response 
+#FIX:  -> api Push images to Google cloud storage and return GoogleCloud Storage link with temporary access to predicted photos | Return Json response with prediction metrics | return downloadable images.
+#TODO: -> gcp Set up terraform 
+#TODO: -> gcp Set up GCP Services 
+#TODO: -> project Write Readme 
+#TODO: -> webapp Build Web Application 
+#pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
