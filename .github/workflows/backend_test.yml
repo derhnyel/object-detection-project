@@ -30,6 +30,7 @@ jobs:
           envFilePath: ./object-detection-project/.github/variables/testenv #*
       - name: Run Test
         run: |
-
           cd ./backend
+          export ENV_FILE_LOCATION=${{secrets.ENVIRON}}
+          jq -n --arg appname  "$appname" ${{secrets.GCP_SEVICE_ACCOUNT_CREDENTIALS}} > service_account.json
           pytest ./tests/
