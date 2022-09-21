@@ -13,6 +13,7 @@ from utilities.utility import ValidateFile, BaseHttpException, Helpers
 
 model = load_model()
 
+
 class PredictApiView(apimock.Base):
     max_payload_content_lenght = 2
     max_payload_object_size = 2097152
@@ -50,24 +51,25 @@ class PredictApiView(apimock.Base):
         )
         return post_parser
 
-    def pushtobucket(self, filename,id,stream=True,bytefile=None,content_type=None,read=True):
+    def pushtobucket(
+        self, filename, id, stream=True, bytefile=None, content_type=None, read=True
+    ):
         """
         Upload Image to Cloud and
         generate download link
         """
         cloudbucket_path = f"{self.cloud_bucket_prefix}/{id}/{filename}"
         if stream:
-           return self.cloud_bucket.upload_from_stream(
-               blobpath=cloudbucket_path,
-               file=bytefile,
-               content_type=content_type,
-               read=read,
-               filename=filename
-               )
+            return self.cloud_bucket.upload_from_stream(
+                blobpath=cloudbucket_path,
+                file=bytefile,
+                content_type=content_type,
+                read=read,
+                filename=filename,
+            )
         else:
             local_image_filepath = Path(self.result_path, id, filename)
             return self.cloud_bucket.upload_blob(cloudbucket_path, local_image_filepath)
-        
 
     def post(self):
         """
@@ -90,7 +92,7 @@ class PredictApiView(apimock.Base):
             self.validatefile.file = imageObject
             file_lenght = Helpers.get_file_size(imageObject)
             content_type = imageObject.content_type
-            if self.validatefile.isvalid(["image","octet-stream"], file_lenght):
+            if self.validatefile.isvalid(["image", "octet-stream"], file_lenght):
                 filename = os.path.basename(imageObject.filename)
                 with imageObject.stream as imageFile:
                     try:
@@ -127,11 +129,13 @@ class PredictApiView(apimock.Base):
                 try:
                     pil_image_object = result.image_object
                     byte = io.BytesIO()
-                    pil_image_object.save(byte,"JPEG") #Convert to Byte In Memory 
-                    byte.seek(0)                
-                    downloadlink = self.pushtobucket(filename,id,bytefile=byte,content_type=content_type)
+                    pil_image_object.save(byte, "JPEG")  # Convert to Byte In Memory
+                    byte.seek(0)
+                    downloadlink = self.pushtobucket(
+                        filename, id, bytefile=byte, content_type=content_type
+                    )
                 except:
-                    downloadlink = self.pushtobucket(filename,id,stream=False)
+                    downloadlink = self.pushtobucket(filename, id, stream=False)
                 images.append(
                     dict(
                         prefix=self.cloud_bucket_prefix,

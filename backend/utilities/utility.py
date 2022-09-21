@@ -4,12 +4,13 @@ import logging
 from PIL import Image
 from pathlib import Path
 from enum import Enum, unique
-from numpy import ndarray,uint8
+from numpy import ndarray, uint8
 from logging.config import dictConfig
 from logging.handlers import SMTPHandler
 from flask.logging import default_handler
 from flask import has_request_context, request
-#from resources.cache.models.ultralytics_yolov5_master.utils.plots import Annotator, colors
+
+# from resources.cache.models.ultralytics_yolov5_master.utils.plots import Annotator, colors
 
 
 @unique
@@ -182,17 +183,27 @@ class ValidateFile:
         self.file = file
         self.max_lenght = max_lenght
 
-    def _isvalid_filetype(self, type_) -> bool:
+    def _isvalid_filetype(self, type_: list or str) -> bool:
         try:
-            if isinstance(type_,list):
-                return True if any([True for typ in type_ if typ in self.file.content_type]) else False
+            if isinstance(type_, list):
+                return (
+                    True
+                    if any([True for typ in type_ if typ in self.file.content_type])
+                    else False
+                )
             return True if (type_ in self.file.content_type) else False
         except AttributeError:
-            if isinstance(type_,list):
-                return True if any([True for typ in type_ if typ in self.file.mimetype]) else False
-            return True if (type_ in self.file.content_type or type_ in self.file.mimetype) else False
-            
-
+            if isinstance(type_, list):
+                return (
+                    True
+                    if any([True for typ in type_ if typ in self.file.mimetype])
+                    else False
+                )
+            return (
+                True
+                if (type_ in self.file.content_type or type_ in self.file.mimetype)
+                else False
+            )
 
     def _isvalid_size(self, content_length=None) -> bool:
         try:
@@ -250,9 +261,9 @@ class Helpers:
         file_length = file.seek(0, os.SEEK_END)
         file.seek(0, os.SEEK_SET)
         return file_length
-    
-    #@staticmethod
-    #self.ims,self.pred,self.names,self.files
+
+    # @staticmethod
+    # self.ims,self.pred,self.names,self.files
     # def get_image_object(ims,pred,names,files):
     #     results =  []
     #     s, crops = '', []
@@ -273,4 +284,3 @@ class Helpers:
     #         im = Image.fromarray(im.astype(uint8)) if isinstance(im, ndarray) else im  # from np
     #         results.append(im)
     #     return results
-

@@ -38,25 +38,29 @@ class Storage:
         return check
 
     def upload_blob(self, filename, filepath, public=True):
-        """Uploads a file to the bucket."""
+        """Uploads a file from local Path to the bucket."""
         blob = self.bucket.blob(filename)
         blob.upload_from_filename(filepath)
         log.info(
             "File {} uploaded to {} blob in cloud bucket.".format(filepath, filename)
         )
         return self.make_blob_public(filename) if public else None
-    
-    def upload_from_stream(self,blobpath,file,content_type=None,read=True,filename=None,public=True):
+
+    def upload_from_stream(
+        self, blobpath, file, content_type=None, read=True, filename=None, public=True
+    ):
+        """Upload A file stream from memory to cloud bucket"""
         blob = self.bucket.blob(blobpath)
         blob.upload_from_string(
-        file.read() if read else file,
-        content_type=content_type if content_type else file.content_type
+            file.read() if read else file,
+            content_type=content_type if content_type else file.content_type,
         )
         log.info(
-            "File {} uploaded to {} blob in cloud bucket.".format(filename if filename else file.filename , blobpath)
+            "File {} uploaded to {} blob in cloud bucket.".format(
+                filename if filename else file.filename, blobpath
+            )
         )
         return self.make_blob_public(blobpath) if public else None
-
 
     def make_blob_public(self, blob_name):
         """Makes a blob publicly accessible."""
@@ -75,7 +79,7 @@ class Storage:
         blob = self.bucket.blob(filename)
         url = blob.generate_signed_url(
             version="v4",
-            # This URL is valid for {} minutes
+            # This URL is valid for `minutes` minutes
             expiration=datetime.timedelta(minutes=minutes),
             # Allow GET requests using this URL.
             method="GET",
