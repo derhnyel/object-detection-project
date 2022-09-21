@@ -45,6 +45,18 @@ class Storage:
             "File {} uploaded to {} blob in cloud bucket.".format(filepath, filename)
         )
         return self.make_blob_public(filename) if public else None
+    
+    def upload_from_stream(self,blobpath,file,content_type=None,read=True,filename=None,public=True):
+        blob = self.bucket.blob(blobpath)
+        blob.upload_from_string(
+        file.read() if read else file,
+        content_type=content_type if content_type else file.content_type
+        )
+        log.info(
+            "File {} uploaded to {} blob in cloud bucket.".format(filename if filename else file.filename , blobpath)
+        )
+        return self.make_blob_public(blobpath) if public else None
+
 
     def make_blob_public(self, blob_name):
         """Makes a blob publicly accessible."""
