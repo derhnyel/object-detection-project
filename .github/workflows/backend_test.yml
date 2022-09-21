@@ -28,7 +28,7 @@ jobs:
       - name: Set Environment Variables
         uses: tw3lveparsecs/github-actions-setvars@v0.1
         with:
-          envFilePath: ./object-detection-project/.github/variables/testenv #*
+          envFilePath: ${{secrets.ENVIRON}}
       - name: Run Test
         run: |
           cd ./backend
