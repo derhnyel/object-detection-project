@@ -1,12 +1,15 @@
 import os
 import uuid
 import logging
+from PIL import Image
 from pathlib import Path
 from enum import Enum, unique
+from numpy import ndarray,uint8
 from logging.config import dictConfig
 from logging.handlers import SMTPHandler
 from flask.logging import default_handler
 from flask import has_request_context, request
+#from resources.cache.models.ultralytics_yolov5_master.utils.plots import Annotator, colors
 
 
 @unique
@@ -181,13 +184,15 @@ class ValidateFile:
 
     def _isvalid_filetype(self, type_) -> bool:
         try:
-            return (
-                True
-                if (type_ in self.file.content_type or type_ in self.file.mimetype)
-                else False
-            )
-        except AttributeError:
+            if isinstance(type_,list):
+                return True if any([True for typ in type_ if typ in self.file.content_type]) else False
             return True if (type_ in self.file.content_type) else False
+        except AttributeError:
+            if isinstance(type_,list):
+                return True if any([True for typ in type_ if typ in self.file.mimetype]) else False
+            return True if (type_ in self.file.content_type or type_ in self.file.mimetype) else False
+            
+
 
     def _isvalid_size(self, content_length=None) -> bool:
         try:
@@ -245,3 +250,27 @@ class Helpers:
         file_length = file.seek(0, os.SEEK_END)
         file.seek(0, os.SEEK_SET)
         return file_length
+    
+    #@staticmethod
+    #self.ims,self.pred,self.names,self.files
+    # def get_image_object(ims,pred,names,files):
+    #     results =  []
+    #     s, crops = '', []
+    #     for i, (im, pred) in enumerate(zip(ims,pred)):
+    #         s += f'\nimage {i + 1}/{len(pred)}: {im.shape[0]}x{im.shape[1]} '  # string
+    #         if pred.shape[0]:
+    #             for c in pred[:, -1].unique():
+    #                 n = (pred[:, -1] == c).sum()  # detections per class
+    #                 s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+    #             s = s.rstrip(', ')
+    #             annotator = Annotator(im, example=str(names))
+    #             for *box, conf, cls in reversed(pred):  # xyxy, confidence, class
+    #                 label = f'{names[int(cls)]} {conf:.2f}'
+    #                 annotator.box_label(box, label if labels else '', color=colors(cls))
+    #             im = annotator.im
+    #         else:
+    #             s += '(no detections)'
+    #         im = Image.fromarray(im.astype(uint8)) if isinstance(im, ndarray) else im  # from np
+    #         results.append(im)
+    #     return results
+
