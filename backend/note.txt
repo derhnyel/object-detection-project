@@ -19,3 +19,10 @@ pydantic
 #TODO: -> project Write Readme 
 #TODO: -> webapp Build Web Application 
 #pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+
+Windows
+venv\Scripts\activate
+waitress-serve --listen=127.0.0.1:5000 main:app
+set ENV_FILE_LOCATION=./.env.test
+
+gunicorn --bind :$PORT main_v1:app --workers 1 --threads 1 --timeout 60
