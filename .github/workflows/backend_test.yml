@@ -21,18 +21,20 @@ jobs:
       - name: Install Python dependencies
         run: |
           cd ./backend
-          echo $PWD
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Set Environment Variables
-        uses: tw3lveparsecs/github-actions-setvars@v0.1
-        with:
-          envFilePath: ${{secrets.ENVIRON}}
       - name: Run Test
+        env:
+          PROJECT_REGION: ${{secrets.REGION}}
+          BUCKET_NAME: ${{secrets.GCP_BUCKET_NAME}}
+          PROJECT_ID: ${{secrets.GCP_PROJECT_ID}}
+          RESULT_PATH: "tests/results/detect"
+          CLOUD_BUCKET_PREFIX: "test/results"
+          GOOGLE_APPLICATION_CREDENTIALS: ${{secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS}}
+          CLOUD_SERVICE: gcp
         run: |
+          echo PWD
           cd ./backend
-          echo $PWD
-          export ENV_FILE_LOCATION=${{secrets.ENVIRON}}
-          jq -n --arg appname  "$appname" ${{secrets.GCP_SEVICE_ACCOUNT_CREDENTIALS}} > service_account.json
+          echo PWD
           pytest ./tests/
