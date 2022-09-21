@@ -1,8 +1,5 @@
-*.pt
 *.env
 .env*
-cache*
-*cache
 __pycache__*
 *.json
 service_account*

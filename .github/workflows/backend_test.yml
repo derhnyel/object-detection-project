@@ -13,25 +13,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9.0'
-    - name: Install Python dependencies
-      run: |
-        cd ./backend
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
-    - name: Run Test
-      run: |
-        pytest ./tests/
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9.0"
+      - name: Install Python dependencies
+        run: |
+          cd ./backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+        with:
+          envFilePath: ./object-detection-project/.github/variables/testenv #*
+      - name: Run Test
+        run: |
 
-
-    # - name: Set Environment Variables
-    #   uses: tw3lveparsecs/github-actions-setvars@v0.1
-    #   with:
-    #     envFilePath: ./drop/.github/variables/*
-
-
+          cd ./backend
+          pytest ./tests/
