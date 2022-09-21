@@ -21,6 +21,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           cd ./backend
+          echo $PWD
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
@@ -30,6 +31,8 @@ jobs:
           envFilePath: ./object-detection-project/.github/variables/testenv #*
       - name: Run Test
         run: |
-
           cd ./backend
+          echo $PWD
+          export ENV_FILE_LOCATION=${{secrets.ENVIRON}}
+          jq -n --arg appname  "$appname" ${{secrets.GCP_SEVICE_ACCOUNT_CREDENTIALS}} > service_account.json
           pytest ./tests/
