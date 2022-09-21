@@ -13,7 +13,6 @@ from utilities.utility import ValidateFile, BaseHttpException, Helpers
 
 model = load_model()
 
-
 class PredictApiView(apimock.Base):
     max_payload_content_lenght = 2
     max_payload_object_size = 2097152
@@ -51,14 +50,24 @@ class PredictApiView(apimock.Base):
         )
         return post_parser
 
-    def pushtobucket(self, filename, id):
+    def pushtobucket(self, filename,id,stream=True,bytefile=None,content_type=None,read=True):
         """
         Upload Image to Cloud and
         generate download link
         """
-        local_image_filepath = Path(self.result_path, id, filename)
         cloudbucket_path = f"{self.cloud_bucket_prefix}/{id}/{filename}"
-        return self.cloud_bucket.upload_blob(cloudbucket_path, local_image_filepath)
+        if stream:
+           return self.cloud_bucket.upload_from_stream(
+               blobpath=cloudbucket_path,
+               file=bytefile,
+               content_type=content_type,
+               read=read,
+               filename=filename
+               )
+        else:
+            local_image_filepath = Path(self.result_path, id, filename)
+            return self.cloud_bucket.upload_blob(cloudbucket_path, local_image_filepath)
+        
 
     def post(self):
         """
@@ -80,14 +89,9 @@ class PredictApiView(apimock.Base):
             # Preprocessing Images
             self.validatefile.file = imageObject
             file_lenght = Helpers.get_file_size(imageObject)
-            if self.validatefile.isvalid("image", file_lenght):
+            content_type = imageObject.content_type
+            if self.validatefile.isvalid(["image","octet-stream"], file_lenght):
                 filename = os.path.basename(imageObject.filename)
-                id = Helpers.generate_uuid(
-                    source="cloud",
-                    base_path=self.result_path,
-                    prefix=self.cloud_bucket_prefix,
-                    cloud=self.cloud_bucket,
-                )
                 with imageObject.stream as imageFile:
                     try:
                         image = Image.open(io.BytesIO(imageFile.read()))  # base64
@@ -97,7 +101,7 @@ class PredictApiView(apimock.Base):
                         )
                         abort(status_code, message=message)
                 image.filename = filename
-                # Predict and Save Image
+                # Predict and Save Image to Cloud Bucket
                 result = self.model(image, size=320)  # speed 320 , Accuracy 640
                 records = result.pandas().xyxy[0].to_json(orient="records")
                 if len(records) == 2:
@@ -113,8 +117,21 @@ class PredictApiView(apimock.Base):
                         )
                     )
                     continue
+                id = Helpers.generate_uuid(
+                    source="cloud",
+                    base_path=self.result_path,
+                    prefix=self.cloud_bucket_prefix,
+                    cloud=self.cloud_bucket,
+                )
                 result.save(save_dir=Path(self.result_path, id))
-                downloadlink = self.pushtobucket(filename, id)
+                try:
+                    pil_image_object = result.image_object
+                    byte = io.BytesIO()
+                    pil_image_object.save(byte,"JPEG") #Convert to Byte In Memory 
+                    byte.seek(0)                
+                    downloadlink = self.pushtobucket(filename,id,bytefile=byte,content_type=content_type)
+                except:
+                    downloadlink = self.pushtobucket(filename,id,stream=False)
                 images.append(
                     dict(
                         prefix=self.cloud_bucket_prefix,
