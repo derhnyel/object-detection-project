@@ -17,7 +17,9 @@ class GcpTest(BaseCase):
         response = self.app.post(predict_url_prefix, data=files)
         data = response.json.get("results")[0]
         path = f"{data['prefix']}/{data['id']}/{data['filename']}"
+        self.assertEqual(self.cloud_storage.blob_exists(path), True)
         local_file_path = Path(
+            os.getcwd(),
             os.environ["RESULT_PATH"],
             f"{data['filename']}",
         )

@@ -17,8 +17,9 @@ def __init_gcp():
     With environment credentials
     """
     if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        service_key_path = os.environ["SERVICE_KEY_PATH"]
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_key_path
+        if os.environ.get("SERVICE_KEY_PATH"):
+            service_key_path = os.environ["SERVICE_KEY_PATH"]
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_key_path
     from services import gcp
 
     storage = gcp.Storage(

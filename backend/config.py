@@ -19,5 +19,5 @@ class Config(object):
     TO_ADDR = os.environ.get("TO_ADDR")
     FROM_ADDR = os.environ.get("FROM_ADDR")
     RESULT_PATH = os.environ.get("RESULT_PATH", "results/detect")
-    CLOUD_BUCKET_PREFIX = os.environ.get("ClOUD_BUCKET_PREFIX", "results")
+    CLOUD_BUCKET_PREFIX = os.environ.get("CLOUD_BUCKET_PREFIX", "results")
     MAX_CONTENT_LENGTH = 6097152  # (2*1024*1024) 2MB
