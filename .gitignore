@@ -5,6 +5,8 @@ __pycache__*
 service_account*
 venv*
 *venv
+note*
+*note
 Pipfile*
 pipenv*
 

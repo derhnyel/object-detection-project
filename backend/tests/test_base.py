@@ -16,7 +16,8 @@ class BaseCase(unittest.TestCase):
         self.cloud_storage = cloud_storage
 
     def tearDown(self):
-        self.cloud_storage.batch_delete(os.environ["CLOUD_BUCKET_PREFIX"])
+        if "test" in os.environ["CLOUD_BUCKET_PREFIX"]:
+            self.cloud_storage.batch_delete(os.environ["CLOUD_BUCKET_PREFIX"])
         try:
             shutil.rmtree(Path(os.environ["RESULT_PATH"]))
         except:

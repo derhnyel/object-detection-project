@@ -1,15 +1,26 @@
 name: cloudrun-deploy
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Object Detection Backend Tests"]
+    branches: [main]
+    types:
+      - completed
+
 jobs:
   setup-build-publish-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@master
+
+      # Setup GCP Auth with Service Account
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v0"
+        with:
+          credentials_json: "${{ secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS }}"
 
       # Setup gcloud CLI
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
@@ -23,17 +34,43 @@ jobs:
         run: |
           gcloud auth configure-docker
 
-      # Build the Docker image
-      - name: Build & Publish
+      #Create a Docker repository in Artifact Registry
+      - name: Setup Artifact Registry
         run: |
-          gcloud config set project ${{ secrets.GCP_PROJECT }}
-          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }}
-          gcloud config set run/region us-central1
+          gcloud artifacts repositories create quickstart-docker-repo --repository-format=docker \
+          --location=${{ secrets.REGION }} \ 
+          --description="Docker repository"
+          gcloud artifacts repositories list
+
+      # Setup and Build the Docker image
+      - name: Setup & Build & Publish
+        env:
+          CLOUD_SERVICE: "gcp"
+          PROJECT_REGION: "${{ secrets.REGION }}"
+          BUCKET_NAME: "${{ secrets.GCP_BUCKET_NAME }}"
+          PROJECT_ID: "${{ secrets.GCP_PROJECT_ID }}"
+          SERVICE_KEY_PATH: "service_account.json"
+          MAIL_SERVER: "${{ secrets.MAIL_SERVER }}"
+          MAIL_PORT: "${{ secrets.MAIL_PORT }}"
+          MAIL_USERNAME: "${{ secrets.MAIL_USERNAME }}"
+          MAIL_PASSWORD: "${{ secrets.MAIL_PASSWORD }}"
+          FROM_ADDR: "${{ secrets.MAIL_FROM_ADDR }}"
+          TO_ADDR: "${{ secrets.MAIL_TO_ADDR }}"
+          RESULT_PATH: "results/detect"
+          CLOUD_BUCKET_PREFIX: "${{ secrets.CLOUD_BUCKET_PREFIX }}"
+        run: |
+          cd ./backend
+          rm -r tests
+          cp "${{steps.id.outputs.credentials_file_path}}" service_account.json
+          ./set_env.sh > .env
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID}}
+          gcloud builds submit --region=${{ secrets.REGION }} --tag ${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/quickstart-docker-repo/quickstart-image:tag1
+          gcloud config set run/region ${{ secrets.REGION }}
 
       # Deploy the Docker image to the GKE cluster
       - name: Deploy
         run: |
-          gcloud run deploy ${{ secrets.GCP_APPLICATION }} --image gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }} \
+          gcloud run deploy ${{ secrets.GCP_APPLICATION }} --image ${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/quickstart-docker-repo/quickstart-image:tag1 \
           --platform managed \
           --allow-unauthenticated \
           --memory 512M
