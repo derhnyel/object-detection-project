@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v0"
+        with:
+          credentials_json: "${{secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS}}"
+
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
@@ -26,15 +32,13 @@ jobs:
           pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio===0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
       - name: Run Test
         env:
-          PROJECT_REGION: ${{secrets.REGION}}
-          BUCKET_NAME: ${{secrets.GCP_BUCKET_NAME}}
-          PROJECT_ID: ${{secrets.GCP_PROJECT_ID}}
+          PROJECT_REGION: "${{secrets.REGION}}"
+          BUCKET_NAME: "${{secrets.GCP_BUCKET_NAME}}"
+          PROJECT_ID: "${{secrets.GCP_PROJECT_ID}}"
           RESULT_PATH: "tests/results/detect"
           CLOUD_BUCKET_PREFIX: "test/results"
-          GOOGLE_APPLICATION_CREDENTIALS: ${{secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS}}
           CLOUD_SERVICE: gcp
+          SERVICE_KEY_PATH: "${{steps.id.outputs.credentials_file_path}}"
         run: |
-          echo PWD
           cd ./backend
-          echo PWD
           pytest ./tests/
