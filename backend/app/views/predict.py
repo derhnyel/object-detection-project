@@ -44,7 +44,7 @@ class PredictApiView(apimock.Base):
             "image",
             dest="image",
             required=True,
-            help="Upload image as payload",
+            help="Upload an image as payload",
             action="append",
             location="files",
             type=FileStorage,

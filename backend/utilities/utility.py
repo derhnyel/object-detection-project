@@ -1,10 +1,10 @@
 import os
 import uuid
 import logging
-from PIL import Image
+#from PIL import Image
 from pathlib import Path
 from enum import Enum, unique
-from numpy import ndarray, uint8
+#from numpy import ndarray, uint8
 from logging.config import dictConfig
 from logging.handlers import SMTPHandler
 from flask.logging import default_handler
@@ -20,7 +20,6 @@ class LogLevels(Enum):
     warning = logging.WARNING
     error = logging.ERROR
     critical = logging.CRITICAL
-
 
 class Logging:
     def __init__(
